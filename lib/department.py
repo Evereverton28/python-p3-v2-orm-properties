@@ -3,8 +3,6 @@ from __init__ import CURSOR, CONN
 
 
 class Department:
-
-    # Dictionary of objects saved to the database.
     all = {}
 
     def __init__(self, name, location, id=None):
@@ -14,6 +12,32 @@ class Department:
 
     def __repr__(self):
         return f"<Department {self.id}: {self.name}, {self.location}>"
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if isinstance(name, str) and len(name):
+            self._name = name
+        else:
+            raise ValueError(
+                "Name must be a non-empty string"
+            )
+
+    @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, location):
+        if isinstance(location, str) and len(location):
+            self._location = location
+        else:
+            raise ValueError(
+                "Location must be a non-empty string"
+            )
 
     @classmethod
     def create_table(cls):
@@ -80,24 +104,17 @@ class Department:
         CURSOR.execute(sql, (self.id,))
         CONN.commit()
 
-        # Delete the dictionary entry using id as the key
         del type(self).all[self.id]
-
-        # Set the id to None
         self.id = None
 
     @classmethod
     def instance_from_db(cls, row):
         """Return a Department object having the attribute values from the table row."""
-
-        # Check the dictionary for an existing instance using the row's primary key
         department = cls.all.get(row[0])
         if department:
-            # ensure attributes match row values in case local instance was modified
             department.name = row[1]
             department.location = row[2]
         else:
-            # not in dictionary, create new instance and add to dictionary
             department = cls(row[1], row[2])
             department.id = row[0]
             cls.all[department.id] = department
